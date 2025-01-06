@@ -1,12 +1,12 @@
-const path = require('path');
+const path = require("path");
 
 module.exports = {
-    entry: './src/index.js',
+    entry: "./src/index.js", // Entry point for the SDK
     output: {
-        filename: 'scylla-sdk.js',
-        path: path.resolve(__dirname, 'dist'),
-        library: 'ScyllaSDK',
-        libraryTarget: 'umd',
+        filename: "scylla-sdk.js", // Output file
+        path: path.resolve(__dirname, "dist"), // Output folder
+        library: "ScyllaSDK", // Name of the global variable
+        libraryTarget: "umd", // Universal Module Definition
     },
-    mode: 'production',
+    mode: "production", // Optimize for production
 };
