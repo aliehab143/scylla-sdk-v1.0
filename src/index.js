@@ -10,7 +10,6 @@ class ScyllaSDK {
             console.warn("Recording already started.");
             return;
         }
-
         const stream = await navigator.mediaDevices.getDisplayMedia({
             video: { mediaSource: "screen" },
         });
@@ -22,10 +21,6 @@ class ScyllaSDK {
             if (event.data.size > 0) {
                 this.chunks.push(event.data);
             }
-        };
-
-        this.recorder.onstop = () => {
-            console.log("Recording stopped.");
         };
 
         this.recorder.start();
@@ -68,4 +63,10 @@ class ScyllaSDK {
     }
 }
 
+// Attach ScyllaSDK to the global window object for browser usage
+if (typeof window !== "undefined") {
+    window.ScyllaSDK = ScyllaSDK;
+}
+
+// Default export for CommonJS/ESM environments
 export default ScyllaSDK;

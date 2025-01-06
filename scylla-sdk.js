@@ -1,1 +1,74 @@
-!function(e,o){"object"==typeof exports&&"object"==typeof module?module.exports=o():"function"==typeof define&&define.amd?define([],o):"object"==typeof exports?exports.ScyllaSDK=o():e.ScyllaSDK=o()}(self,(()=>(()=>{"use strict";var e={d:(o,r)=>{for(var t in r)e.o(r,t)&&!e.o(o,t)&&Object.defineProperty(o,t,{enumerable:!0,get:r[t]})},o:(e,o)=>Object.prototype.hasOwnProperty.call(e,o),r:e=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})}},o={};e.r(o),e.d(o,{default:()=>r});const r=class{constructor(e){this.apiUrl=e,this.recorder=null,this.chunks=[]}async start(){if(this.recorder)return void console.warn("Recording already started.");const e=await navigator.mediaDevices.getDisplayMedia({video:{mediaSource:"screen"}});this.recorder=new MediaRecorder(e,{mimeType:"video/webm"}),this.chunks=[],this.recorder.ondataavailable=e=>{e.data.size>0&&this.chunks.push(e.data)},this.recorder.onstop=()=>{console.log("Recording stopped.")},this.recorder.start(),console.log("Recording started...")}stop(){this.recorder&&"recording"===this.recorder.state?(this.recorder.stop(),this.recorder=null,console.log("Recording stopped.")):console.warn("No recording in progress.")}async uploadVideo(e={}){const o=new Blob(this.chunks,{type:"video/webm"});if(o.size>0){const r=new FormData;r.append("video",o,"session-recording.webm"),r.append("errorDetails",JSON.stringify(e));try{const e=await fetch(`${this.apiUrl}/upload-video`,{method:"POST",body:r});e.ok?console.log("Video uploaded successfully."):console.error("Failed to upload video:",e.statusText)}catch(e){console.error("Error uploading video:",e)}}}};return o})()));
+// ScyllaSDK Implementation
+class ScyllaSDK {
+    constructor(apiUrl) {
+        this.apiUrl = apiUrl;
+        this.recorder = null;
+        this.chunks = [];
+    }
+
+    async start() {
+        if (this.recorder) {
+            console.warn("Recording already started.");
+            return;
+        }
+
+        // Request screen recording permissions
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { mediaSource: "screen" },
+        });
+
+        // Initialize the MediaRecorder
+        this.recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+        this.chunks = [];
+
+        // Collect video chunks as data is available
+        this.recorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                this.chunks.push(event.data);
+            }
+        };
+
+        this.recorder.start();
+        console.log("Recording started...");
+    }
+
+    stop() {
+        if (this.recorder && this.recorder.state === "recording") {
+            this.recorder.stop();
+            this.recorder = null;
+            console.log("Recording stopped.");
+        } else {
+            console.warn("No recording in progress.");
+        }
+    }
+
+    async uploadVideo(errorDetails = {}) {
+        const blob = new Blob(this.chunks, { type: "video/webm" });
+
+        if (blob.size > 0) {
+            const formData = new FormData();
+            formData.append("video", blob, "session-recording.webm");
+            formData.append("errorDetails", JSON.stringify(errorDetails));
+
+            try {
+                const response = await fetch(`${this.apiUrl}/upload-video`, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    console.log("Video uploaded successfully.");
+                } else {
+                    console.error("Failed to upload video:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error uploading video:", error);
+            }
+        }
+    }
+}
+
+// Attach ScyllaSDK to the global window object
+if (typeof window !== "undefined") {
+    window.ScyllaSDK = ScyllaSDK;
+}
